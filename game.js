@@ -1,6 +1,6 @@
 /* ============================================================
  * 中国象棋 游戏流程 + 渲染 + 交互 + 音效 + 彩带 + 朗读 + 持久化 + 复盘
- * 依赖：rules.js (XQ)、ai.js (XQAI)、engine.js (Pikafish WASM Worker)
+ * 依赖：rules.js (XQ)、ai.js (XQAI)、xqengine.js (XQEngine, 基于 xqwlight)
  * ============================================================ */
 (function () {
   'use strict';
@@ -42,42 +42,6 @@
   let reviewMoves = [], reviewIndex = 0;
 
   const SAVE_KEY = 'xiangqi_save_v1';
-
-  /* ---------------- 引擎 Worker ---------------- */
-  const engineWorker = new Worker('engine.js');
-  let engineReady = false;
-  let reqId = 0;
-  const pending = {};
-
-  engineWorker.onmessage = (e) => {
-    const d = e.data || {};
-    if (d.event === 'ready') {
-      engineReady = true;
-    } else if (d.id && pending[d.id]) {
-      if (d.error) pending[d.id].reject(new Error(d.error));
-      else pending[d.id].resolve(d.result);
-      delete pending[d.id];
-    }
-  };
-
-  function searchEngine(fen, movetime) {
-    return new Promise((resolve, reject) => {
-      const id = ++reqId;
-      pending[id] = { resolve, reject };
-      engineWorker.postMessage({ id, cmd: 'search', fen, movetime });
-    });
-  }
-
-  function waitEngineReady() {
-    if (engineReady) return Promise.resolve();
-    return new Promise((resolve) => {
-      const check = () => {
-        if (engineReady) resolve();
-        else setTimeout(check, 120);
-      };
-      check();
-    });
-  }
 
   /* ---------------- 状态辅助 ---------------- */
   function aiSide() { return XQ.oppSide(humanSide); }
@@ -183,34 +147,24 @@
     aiMove();
   }
 
-  async function aiMove() {
+  function aiMove() {
     if (mode !== 'pve' || over || current !== aiSide()) return;
     const side = aiSide();
     try {
-      await waitEngineReady();
-      const fen = XQ.toFEN(board, side);
-      const r0 = await searchEngine(fen, 1500);
-      const bm = r0.bestmove;
-      if (!bm || bm.length < 4) throw new Error('引擎未返回走法');
-      const from = XQ.engineToSq(bm.slice(0, 2));
-      const to = XQ.engineToSq(bm.slice(2, 4));
-      if (!XQ.inBoard(from.r, from.c) || !XQ.inBoard(to.r, to.c) || board[from.r][from.c] === 0) {
-        throw new Error('引擎走法越界：' + bm);
+      // 走子前评估（AI 视角）
+      const beforeCp = XQEngine.evaluate(board, side);
+      // 搜索最佳走法（同步，xqwlight 纯 JS）
+      const mv = XQEngine.search(board, side, 16, 1500);
+      if (!mv || !XQ.inBoard(mv.fr, mv.fc) || !XQ.inBoard(mv.tr, mv.tc) || board[mv.fr][mv.fc] === 0) {
+        throw new Error('引擎未返回有效走法');
       }
-      const move = { fr: from.r, fc: from.c, tr: to.r, tc: to.c, piece: board[from.r][from.c], captured: board[to.r][to.c] };
+      const move = { fr: mv.fr, fc: mv.fc, tr: mv.tr, tc: mv.tc, piece: board[mv.fr][mv.fc], captured: board[mv.tr][mv.tc] };
 
       // 走子后评估（转 AI 视角）
       const afterBoard = XQ.applyMove(board, move);
-      const fenAfter = XQ.toFEN(afterBoard, humanSide);
-      let afterCp = 0, afterMate = 0;
-      try {
-        const r1 = await searchEngine(fenAfter, 1000);
-        afterCp = -(r1.scoreCp || 0);
-        afterMate = r1.mate ? -r1.mate : 0;
-      } catch (e) { /* 忽略评估失败 */ }
+      const afterCp = -XQEngine.evaluate(afterBoard, XQ.oppSide(side));
 
-      const ev = { beforeCp: r0.scoreCp || 0, beforeMate: r0.mate || 0, afterCp, afterMate, depth: r0.depth };
-      const comment = XQAI.explainMove(board, move, side, ev);
+      const comment = XQAI.explainMove(board, move, side, { beforeCp, afterCp });
 
       thinking = false;
       showAiComment(comment);

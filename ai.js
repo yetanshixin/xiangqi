@@ -9,26 +9,23 @@
   const XQ = window.XQ;
 
   /* ---------------- 评估分工具 ---------------- */
-  // 厘兵 → 带符号小数（子力单位）
-  function fmt(cp) {
-    const v = cp / 100;
-    const s = (v >= 0 ? '+' : '') + v.toFixed(2);
-    return s;
+  // xqwlight 分值点 → 带符号整数（车≈256，兵≈20~30，MATE=10000）
+  function fmt(v) {
+    return (v >= 0 ? '+' : '') + Math.round(v);
   }
 
   // 从 AI 方视角的定性标签
-  function label(cp, mate) {
-    if (mate !== 0) return mate > 0 ? '胜势（杀棋在望）' : '败势（将被杀）';
-    const x = cp;
-    if (x >= 800) return '胜势';
-    if (x >= 300) return '大优';
-    if (x >= 100) return '优势';
-    if (x >= 30) return '略优';
-    if (x > -30) return '均势';
-    if (x > -100) return '略差';
-    if (x > -300) return '劣势';
-    if (x > -800) return '大劣';
-    return '败势';
+  function label(v) {
+    const x = v;
+    if (x >= 9000) return '胜势（临近杀棋）';
+    if (x >= 600) return '大优';
+    if (x >= 300) return '优势';
+    if (x >= 150) return '略优';
+    if (x > -150) return '均势';
+    if (x > -300) return '略差';
+    if (x > -600) return '劣势';
+    if (x > -9000) return '大劣';
+    return '败势（临近被杀）';
   }
 
   function pieceDesc(p) {
@@ -179,18 +176,12 @@
     // ---- 叠加评估分变化 ----
     let evalStr = '';
     if (ev) {
-      const beforeMate = ev.beforeMate || 0, afterMate = ev.afterMate || 0;
       const beforeCp = ev.beforeCp || 0, afterCp = ev.afterCp || 0;
-      if (afterMate !== 0 && afterMate > 0) {
-        evalStr = '评估：已成' + (afterMate) + '步杀势（引擎判定必杀）。';
-      } else {
-        const delta = afterCp - beforeCp;
-        evalStr = '评估：' + label(beforeCp, beforeMate) + ' → ' + label(afterCp, afterMate)
-          + '（' + fmt(delta) + '）';
-        if (delta >= 30) evalStr += '，局面朝我方有利方向转化。';
-        else if (delta <= -30) evalStr += '，以局部代价换取更大的战略利益。';
-        else evalStr += '，双方基本均衡。';
-      }
+      const delta = afterCp - beforeCp;
+      evalStr = '评估：' + label(beforeCp) + ' → ' + label(afterCp) + '（' + fmt(delta) + '）';
+      if (delta >= 50) evalStr += '，局面朝我方有利方向转化。';
+      else if (delta <= -50) evalStr += '，以局部代价换取更大的战略利益。';
+      else evalStr += '，双方基本均衡。';
     }
 
     return notation + '：' + body + ' ' + evalStr;
