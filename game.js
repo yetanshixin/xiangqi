@@ -147,14 +147,14 @@
     aiMove();
   }
 
-  function aiMove() {
+  async function aiMove() {
     if (mode !== 'pve' || over || current !== aiSide()) return;
     const side = aiSide();
     try {
       // 走子前评估（AI 视角）
       const beforeCp = XQEngine.evaluate(board, side);
-      // 搜索最佳走法（同步，xqwlight 纯 JS）
-      const mv = XQEngine.search(board, side, 16, 1500);
+      // 搜索最佳走法（Worker 内执行，不阻塞主线程）
+      const mv = await XQEngine.search(board, side, 16, 1500);
       if (!mv || !XQ.inBoard(mv.fr, mv.fc) || !XQ.inBoard(mv.tr, mv.tc) || board[mv.fr][mv.fc] === 0) {
         throw new Error('引擎未返回有效走法');
       }

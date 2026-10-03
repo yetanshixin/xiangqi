@@ -4,7 +4,7 @@
 
 ## 运行
 
-纯 JS 实现（无 WASM、无 Worker），**直接双击 `index.html` 即可玩**；也可用本地服务器：
+需要本地 HTTP 服务器（人机引擎的搜索在 Web Worker 中运行，`file://` 直开会被浏览器拦截）：
 
 ```bash
 node serve.js   # 然后打开 http://localhost:8000
@@ -28,6 +28,7 @@ node serve.js   # 然后打开 http://localhost:8000
 | `rules.js` | 象棋规则引擎（走法生成、将军/将死/困毙、记谱法、FEN） |
 | `ai.js` | 走棋解释生成器（分类模板 + 评估分叠加） |
 | `xqengine.js` | 引擎适配层（封装 xqwlight 的搜索/评估/坐标转换） |
+| `xqworker.js` | Web Worker（加载 xqwlight 执行搜索，避免阻塞主线程） |
 | `game.js` | 游戏流程、渲染、交互、音效、彩带、朗读、持久化、复盘 |
 | `lib/position.js` + `lib/search.js` | xqwlight 引擎（局面/评估/搜索，GPL-2.0） |
 | `serve.js` | 可选：本地静态服务器 |
