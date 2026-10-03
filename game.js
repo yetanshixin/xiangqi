@@ -101,9 +101,9 @@
       return;
     }
 
-    if (captured) playCapture();
+    if (captured) { playCapture(); speakShort('吃'); }
     else playPlace();
-    if (check) playCheck();
+    if (check) { playCheck(); speakShort('将'); }
 
     current = opp;
     updateStatus();
@@ -168,8 +168,8 @@
 
       thinking = false;
       showAiComment(comment);
-      speak(comment);
-      performMove(move, side, comment);
+      performMove(move, side, comment); // 先播报"吃"/"将"
+      speak(comment);                   // 再朗读解释（覆盖"吃"/"将"）
       afterMove();
     } catch (e) {
       thinking = false;
@@ -387,12 +387,17 @@
   function drawLastMove() {
     if (!lastMove) return;
     const { cell } = geom();
-    for (const [r, c] of [[lastMove.fr, lastMove.fc], [lastMove.tr, lastMove.tc]]) {
-      if (board[r][c] === 0) continue;
-      const { x, y } = centerOf(r, c);
+    // 来源格（子原先的位置）：浅色圈
+    const { x: fx, y: fy } = centerOf(lastMove.fr, lastMove.fc);
+    ctx.strokeStyle = 'rgba(255,150,60,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(fx, fy, cell * 0.4, 0, Math.PI * 2); ctx.stroke();
+    // 目标格（子现在的位置）：红圈
+    if (board[lastMove.tr][lastMove.tc] !== 0) {
+      const { x: tx, y: ty } = centerOf(lastMove.tr, lastMove.tc);
       ctx.strokeStyle = 'rgba(255,90,60,0.85)';
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x, y, cell * 0.47, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(tx, ty, cell * 0.47, 0, Math.PI * 2); ctx.stroke();
     }
   }
 
@@ -580,6 +585,19 @@
       u.lang = 'zh-CN';
       if (zhVoice) u.voice = zhVoice;
       u.rate = 1.0;
+      speechSynthesis.speak(u);
+    } catch (e) { /* 忽略 */ }
+  }
+
+  // 简短语音提示（吃/将），不依赖朗读开关
+  function speakShort(text) {
+    if (!text || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      if (zhVoice) u.voice = zhVoice;
+      u.rate = 0.9;
       speechSynthesis.speak(u);
     } catch (e) { /* 忽略 */ }
   }
