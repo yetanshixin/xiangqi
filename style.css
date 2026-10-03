@@ -2,6 +2,15 @@
  * 中国象棋 样式（桌面端 + 移动端响应式）
  * ============================================================ */
 
+/* 内嵌楷体子集（霞鹜文楷，仅含棋子+楚河汉界字，约 6KB）保证各端字体一致 */
+@font-face {
+  font-family: 'XiangqiKai';
+  src: url('lib/xiangqi.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #14181f;
   --panel: #1d232e;

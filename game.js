@@ -337,11 +337,11 @@
     const { cell, ox, oy } = geom();
     const y = oy + 4.5 * cell;
     ctx.fillStyle = 'rgba(90,55,20,0.85)';
-    ctx.font = '600 ' + Math.round(cell * 0.72) + 'px "KaiTi","STKaiti","SimSun",serif';
+    ctx.font = '600 ' + Math.round(cell * 0.72) + 'px "XiangqiKai","LXGW WenKai","KaiTi","STKaiti","SimSun",serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('楚 河', ox + 2 * cell, y);
-    ctx.fillText('漢 界', ox + 6 * cell, y);
+    ctx.fillText('楚 河', ox + 2 * cell, y + cell * 0.04);
+    ctx.fillText('漢 界', ox + 6 * cell, y + cell * 0.04);
   }
 
   function drawPalaces() {
@@ -464,10 +464,10 @@
     ctx.translate(x, y);
     if (!red) ctx.rotate(Math.PI);
     ctx.fillStyle = red ? '#c0392b' : '#1a1a1a';
-    ctx.font = 'bold ' + Math.round(cell * 0.68) + 'px "KaiTi","STKaiti","SimSun",serif';
+    ctx.font = 'bold ' + Math.round(cell * 0.68) + 'px "XiangqiKai","LXGW WenKai","KaiTi","STKaiti","SimSun",serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(XQ.pieceName(XQ.sideOf(piece), XQ.typeOf(piece)), 0, 0);
+    ctx.fillText(XQ.pieceName(XQ.sideOf(piece), XQ.typeOf(piece)), 0, cell * 0.04);
     ctx.restore();
   }
 

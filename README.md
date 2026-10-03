@@ -31,6 +31,7 @@ node serve.js   # 然后打开 http://localhost:8000
 | `xqworker.js` | Web Worker（加载 xqwlight 执行搜索，避免阻塞主线程） |
 | `game.js` | 游戏流程、渲染、交互、音效、彩带、朗读、持久化、复盘 |
 | `lib/position.js` + `lib/search.js` | xqwlight 引擎（局面/评估/搜索，GPL-2.0） |
+| `lib/xiangqi.ttf` | 棋子字体子集（霞鹜文楷，SIL OFL 1.1，仅含 15 字约 6KB，保证各端字体一致） |
 | `serve.js` | 可选：本地静态服务器 |
 
 ## 引擎说明
