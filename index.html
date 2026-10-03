@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#14181f">
+  <title>中国象棋 · Xiangqi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>中国象棋</h1>
+      <p class="subtitle">楚河汉界 · 九宫格 · 红先黑后</p>
+    </header>
+
+    <div class="controls">
+      <div class="control-group" id="modeGroup">
+        <span class="label">模式</span>
+        <button class="btn mode-btn" data-mode="pvp">双人对战</button>
+        <button class="btn mode-btn active" data-mode="pve">人机对战</button>
+        <button class="btn mode-btn" data-mode="review">复盘</button>
+      </div>
+      <div class="control-group" id="sideGroup" style="display:none">
+        <span class="label">你执</span>
+        <button class="btn side-btn active" data-side="red">红方·先手</button>
+        <button class="btn side-btn" data-side="black">黑方·后手</button>
+      </div>
+    </div>
+
+    <div class="status" id="status">轮到红方</div>
+
+    <div class="review-panel" id="reviewPanel" style="display:none">
+      <div class="review-row">
+        <span class="review-step" id="reviewStep">第 0 / 0 步</span>
+        <span class="review-hint" id="reviewHint"></span>
+        <button class="btn review-btn" id="copyReviewBtn">📋 复制对局</button>
+        <button class="btn review-btn" id="loadReviewBtn">导入对局</button>
+      </div>
+      <textarea class="review-input" id="reviewInput" rows="2" placeholder="粘贴对局坐标串，如 h2e2 h9g7 …"></textarea>
+      <div class="review-nav">
+        <button class="btn review-nav-btn" id="navStartBtn">⏮ 开局</button>
+        <button class="btn review-nav-btn" id="navPrevBtn">◀ 上一步</button>
+        <button class="btn review-nav-btn" id="navNextBtn">下一步 ▶</button>
+        <button class="btn review-nav-btn" id="navEndBtn">终局 ⏭</button>
+      </div>
+    </div>
+
+    <div class="ai-comment" id="aiComment">
+      <div class="ai-comment-label">
+        <span class="ai-comment-icon">🤖</span>
+        <span class="ai-comment-name">电脑</span>
+      </div>
+      <div class="ai-comment-text" id="aiCommentText">电脑走棋后，这里会显示每一步的战略思路与评估分变化，帮你理解棋理、提升水平。</div>
+    </div>
+
+    <div class="board-wrap">
+      <canvas id="board"></canvas>
+    </div>
+
+    <div class="actions">
+      <button class="btn action-btn" id="undoBtn">↩ 悔棋</button>
+      <button class="btn action-btn danger" id="resignBtn">🏳 投降</button>
+      <button class="btn action-btn" id="speakBtn">🔇 朗读关</button>
+    </div>
+
+    <footer class="footer">
+      点选棋子 → 高亮可走位置 → 点目标落子<br>
+      触屏 / 鼠标均支持 · 红方先走
+    </footer>
+  </div>
+
+  <div class="overlay" id="resultOverlay" style="display:none">
+    <div class="overlay-card">
+      <div class="overlay-title" id="resultTitle">红方获胜！</div>
+      <div class="overlay-actions">
+        <button class="btn overlay-btn" id="reviewGameBtn">🔍 复盘</button>
+        <button class="btn overlay-btn primary" id="againBtn">再来一局</button>
+      </div>
+      <div class="overlay-hint" id="copyHint"></div>
+    </div>
+  </div>
+
+  <canvas id="confetti"></canvas>
+
+  <script src="rules.js"></script>
+  <script src="ai.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
